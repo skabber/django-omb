@@ -1,41 +1,38 @@
 from openid.yadis import discover
 from omb import OMB_VERSION_01, OMB_UPDATE_PROFILE, OMB_POST_NOTICE, OAUTH_REQUEST, OAUTH_ACCESS, OAUTH_AUTHORIZE, OAUTH_DISCOVERY
-from omb.utils.parser import XRDSParser
+from pydataportability.xrds.parser import XRDSParser
+import StringIO
 
-def getServices(user, profile_url):
+def xrdsContainsServices(xrds, service_names):
+    for service in service_names:
+        if not service in xrds:
+            return False
+    return True
+
+def getServices(profile_url):
     dis = discover.discover(profile_url)
+    import pdb;pdb.set_trace()
+    # identi.ca doesn't implement XRDS correctly http://xrds-simple.net/core/1.0/
+    # This is a hack until laconi.ca fixes http://laconi.ca/trac/ticket/696
+    # Either that or the pydataportability needs to accept both $xrd* and $XRD*
+    response = StringIO.StringIO(dis.response_text.replace("$xrd*", "$XRD*"))
+    
+    xrds_services = {}
+    
     if dis.isXRDS():
-        xrds = XRDSParser(dis.response_text)
-        oauth_services = [s for s in xrds.services if s.type == OAUTH_DISCOVERY]
-        if len(oauth_services) < 1:
-            # TODO Error
+        xrds = XRDSParser(response)
+        for service in xrds.services:
+            xrds_services[service.type] = service
+            if len(xrds_services) < 1:
+                # TODO Error XRDS contained no services
+                return {}
+        if not xrdsContainsServices(xrds_services, [OAUTH_REQUEST, OAUTH_AUTHORIZE, OAUTH_ACCESS]):
+            # TODO Error Not all the OAuth services were present in the XRDS
             return {}
-        oauth_service = oauth_services[0]
-        oauth_xrd = [n for n in xrds.xrd if n.id == oauth_service.uris[0].uri[1:]][0]
-        
-        omb = {}
-        oauth_services = [s for s in oauth_xrd.services]
-        for service in [OAUTH_REQUEST, OAUTH_AUTHORIZE, OAUTH_ACCESS]:
-            for oas in oauth_services:
-                if oas.type.find(service) > -1:
-                    omb[service] = oas
-        if len(omb) != len([OAUTH_REQUEST, OAUTH_AUTHORIZE, OAUTH_ACCESS]):
-            # TODO Error
+        if not xrdsContainsServices(xrds_services, [OMB_POST_NOTICE, OMB_UPDATE_PROFILE]):
+            # TDOD Error Not all the OMB services were present in the XRDS
             return {}
-        
-        omb_services = [s for s in xrds.services if s.type == OMB_VERSION_01] # TODO make that a variable
-        if len(omb_services) < 1:
-            # TODO Error
-            return {}
-        omb_service = omb_services[0]
-        omb_xrd = [n for n in xrds.xrd if n.id == omb_service.uris[0].uri[1:]][0]
-        omb_services = [s for s in omb_xrd.services]
-        for s in [OMB_UPDATE_PROFILE, OMB_POST_NOTICE]:
-            for ombs in omb_services:
-                if ombs.type.find(s) > -1:
-                    omb[s] = ombs
-        # TODO need validation that all services got added the omb and Error if not
-        if not omb[OAUTH_REQUEST].localid.text:
-            # TODO Error
-            return {}
-        return omb
+        return xrds_services
+    else:
+        # TODO Not and XRDS
+        return {}

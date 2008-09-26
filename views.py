@@ -1,6 +1,8 @@
 from django.template import RequestContext
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
+from django.db import models
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 
@@ -11,9 +13,6 @@ from omb.models import RemoteProfile
 from oauth.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1
 from oauth_provider.stores import DataStore
 
-#from pydentica.utils import omb
-#from pydentica.models import RemoteProfile, Subscription, Notice
-
 def follow(request):
     if request.method == "GET":
         form = RemoteSubscribeForm(initial={'username': request.GET.get('username')})
@@ -22,11 +21,9 @@ def follow(request):
         form = RemoteSubscribeForm(request.POST)
         if form.is_valid():
             user = User.objects.get(username=form.cleaned_data['username'])
-            omb = oauthUtils.getServices(user, form.cleaned_data['profile_url'])
+            omb = oauthUtils.getServices(form.cleaned_data['profile_url'])
             token = oauthConsumer.requestToken(omb)
-            print token
             oauthRequest = oauthConsumer.requestAuthorization(token, omb[OAUTH_AUTHORIZE].uris[0].uri, omb[OAUTH_REQUEST].localid.text, user)
-            print(repr(token))
             # store a bunch of stuff in the session varioable oauth_authorization_request
             omb_session = {
                 'listenee': user.username,
@@ -38,8 +35,7 @@ def follow(request):
                 'update_profile_url': omb[OMB_UPDATE_PROFILE].uris[0].uri,
             }
             request.session['oauth_authorization_request'] = omb_session
-            print(oauthRequest.to_url())
-            #return HttpResponseRedirect(oauthRequest.to_url())            
+            return HttpResponseRedirect(oauthRequest.to_url())            
     return render_to_response('omb/remote_subscribe.html', {'form': form})
 
 def finish_follow(request):
@@ -50,11 +46,26 @@ def finish_follow(request):
         remote_profile = RemoteProfile.objects.get(uri=omb_session["listener"])
     except:
         remote_profile = RemoteProfile()
+        remote_profile.username = oauth_request.get_parameter("omb_listener_nickname")
         remote_profile.uri = omb_session["listener"]
-        remote_profile.url = oauth_request['omb_listener_profile']
-        remote_profile.postnoticeurl = omb_session["post_notice_url"]
-        remote_profile.updateprofileurl = omb_session["update_profile_url"]
+        remote_profile.url = oauth_request.get_parameter('omb_listener_profile')
+        remote_profile.post_notice_url = omb_session["post_notice_url"]
+        remote_profile.update_profile_url = omb_session["update_profile_url"]
+        remote_profile.token = accessToken.key
+        remote_profile.secret = accessToken.secret
         remote_profile.save()
+    
+    user = User.objects.get(username=omb_session['listenee'])
+    
+    # TODO wrap this in a try catch
+    app_label, model_name = settings.OMB_FOLLOWING_MODULE.split('.')
+    model = models.get_model(app_label, model_name)
+    
+    following = model()
+    following.followed_content_object = user
+    following.follower_content_object = remote_profile
+    following.save()
+    return HttpResponseRedirect(user.get_absolute_url())
     
 
 def postnotice(request):

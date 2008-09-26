@@ -61,3 +61,28 @@ def requestAccessToken(omb_session, oauth_request):
     data = f.read()
     accessToken = OAuthToken.from_string(data)
     return accessToken
+
+def postNotice(token, secret, post_notice_url, notice_content, notice_url, user):
+    current_site = Site.objects.get_current()
+    user_profile_url = "%s%s" % (current_site.domain, reverse('profile_detail', args=[user.username]))
+    oauthToken = OAuthToken(token, secret)
+    url = urlparse.urlparse(post_notice_url)
+    #import pdb;pdb.set_trace()
+    params = {}
+    if url[4] != '':
+        # We need to copy over the query string params for sites like laconica
+        params.update(dict([part.split('=') for part in url[4].split('&')]))
+    params['omb_version'] = OMB_VERSION_01
+    params['omb_listenee'] = user_profile_url
+    params['omb_notice'] = "%s%s" % (current_site.domain, notice_url)
+    params['omb_notice_content'] = notice_content
+    params['omb_notice_url'] = "%s%s" % (current_site.domain, notice_url)
+    params['omb_notice_license'] = '%s/license/' % current_site.domain # TODO link to the real license
+    
+    consumer = OAuthConsumer(current_site.domain, "")
+    req = OAuthRequest().from_consumer_and_token(consumer, token=oauthToken, http_url=url.geturl(), parameters=params, http_method="POST")
+    req.sign_request(OAuthSignatureMethod_HMAC_SHA1(), consumer, oauthToken)
+    print url.geturl()
+    f = urllib.urlopen(url.geturl(), req.to_postdata())
+    data = f.read()
+    print data
