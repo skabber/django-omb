@@ -1,7 +1,7 @@
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from omb import OMB_VERSION_01, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE
-from oauth.oauth import OAuthConsumer, OAuthRequest, OAuthSignatureMethod_HMAC_SHA1, OAuthToken
+from oauth_provider.oauth import OAuthConsumer, OAuthRequest, OAuthSignatureMethod_HMAC_SHA1, OAuthToken
 import urlparse, urllib
 
 def requestToken(omb):

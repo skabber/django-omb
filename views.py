@@ -10,7 +10,7 @@ from omb.forms import RemoteSubscribeForm
 from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE
 from omb.models import RemoteProfile
 
-from oauth.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1
+from oauth_provider.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1
 from oauth_provider.stores import DataStore
 
 def follow(request):
