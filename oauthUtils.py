@@ -11,7 +11,6 @@ def xrdsContainsServices(xrds, service_names):
 
 def getServices(profile_url):
     dis = discover.discover(profile_url)
-    import pdb;pdb.set_trace()
     # identi.ca doesn't implement XRDS correctly http://xrds-simple.net/core/1.0/
     # This is a hack until laconi.ca fixes http://laconi.ca/trac/ticket/696
     # Either that or the pydataportability needs to accept both $xrd* and $XRD*
