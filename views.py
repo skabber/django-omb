@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse
 
 from omb.forms import RemoteSubscribeForm, AuthorizeForm
 from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE
@@ -151,15 +152,22 @@ def authorize(request):
     if request.method == "GET":
         return user_authorization(request)
     else:
+        current_site = Site.objects.get_current()
+        user_profile_url = "http://%s%s" % (current_site.domain, reverse('profile_detail', args=[request.user.username]))
         response = user_authorization(request)
         if type(response) == HttpResponseRedirect:
             # Add on the necessary omb parameters
             location = response['Location']
-            params = {}
+            params = {
+                "omb_version": "http://openmicroblogging.org/protocol/0.1",
+                "omb_listener_nickname": request.user.username,
+                "omb_listener_profile": user_profile_url,
+            }
             if location.find("?") > -1:
                 location += "&%s" % urllib.urlencode(params)
             else:
                 location += "?%s" % urllib.urlencode(params)
+            response['Location'] = location
         return response
 
 def oauth_authorize(request, token, callback, params):
