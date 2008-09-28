@@ -32,8 +32,8 @@ def requestAuthorization(token, url, listener, user):
         params.update(dict([part.split('=') for part in url[4].split('&')]))
     params['omb_version'] = OMB_VERSION_01
     params['omb_listener'] = listener
-    params['omb_listenee'] = user_profile_url
-    params['omb_listenee_profile'] = user_profile_url
+    params['omb_listenee'] = "http://%s" % user_profile_url
+    params['omb_listenee_profile'] = "http://%s" % user_profile_url
     params['omb_listenee_nickname'] = user.username
     params['omb_listenee_license'] = 'http://%s/license/' % current_site.domain # TODO link to the real license
     params['omb_listenee_fullname'] = "%s %s" % (user.first_name, user.last_name)
@@ -41,7 +41,7 @@ def requestAuthorization(token, url, listener, user):
     params['omb_listenee_bio'] = profile.about
     params['omb_listenee_location'] = profile.location
     params['omb_listenee_avatar'] = '' # TODO get the avatar url
-    params['oauth_callback'] = '%s/omb/finish_follow/' % current_site.domain
+    params['oauth_callback'] = 'http://%s/omb/finish_follow/' % current_site.domain
     consumer = OAuthConsumer(current_site.domain, "")
     oauth_request = OAuthRequest().from_consumer_and_token(consumer, http_url=url.geturl(), parameters=params, http_method="GET", token=token)
     oauth_request.sign_request(OAuthSignatureMethod_HMAC_SHA1(), consumer, token)
