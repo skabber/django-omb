@@ -5,6 +5,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 
 from omb.forms import RemoteSubscribeForm
 from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE
@@ -129,5 +130,8 @@ def xrds(request, username):
 
 def omb_request_token(request):
     consumer_key = request.REQUEST.get("oauth_consumer_key")
-    Consumer.objects.create(name=consumer_key, key=consumer_key)
+    try:
+        Consumer.objects.get(name=consumer_key, key=consumer_key)
+    except ObjectDoesNotExist:
+        Consumer.objects.create(name=consumer_key, key=consumer_key)
     return request_token(request)
