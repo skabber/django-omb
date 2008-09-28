@@ -7,7 +7,7 @@ from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
-from omb.forms import RemoteSubscribeForm
+from omb.forms import RemoteSubscribeForm, AuthorizeForm
 from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE
 from omb.models import RemoteProfile
 
@@ -147,4 +147,20 @@ def omb_request_token(request):
     return response
 
 def oauth_authorize(request, token, callback, params):
-    return HttpResponse('Simple custom view for %s.' % token.consumer.name)
+    if request.method == "GET":
+        form = AuthorizeForm({
+            'token': token.key,
+        })
+        context_vars = {
+            "form": form,
+            "username": request.GET.get("omb_listenee_nickname"),
+            "full_name": request.GET.get("omb_listenee_fullname", ""),
+            "bio": request.GET.get("omb_listenee_bio", ""),
+            "location": request.GET.get("omb_listenee_location", ""),
+            "avatar": request.GET.get("omb_listenee_avatar", ""),
+            "query_string": request.META.get("QUERY_STRING")
+        }
+    else:
+        form = AuthorizeForm(request.POST)
+        print request.POST
+    return render_to_response("omb/authorize.html", context_vars, context_instance=RequestContext(request))
