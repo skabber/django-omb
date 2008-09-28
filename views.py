@@ -16,6 +16,8 @@ from oauth_provider.stores import DataStore
 from oauth_provider.views import request_token
 from oauth_provider.models import Consumer
 
+import logging
+
 def follow(request):
     if request.method == "GET":
         form = RemoteSubscribeForm(initial={'username': request.GET.get('username')})
@@ -130,8 +132,16 @@ def xrds(request, username):
 
 def omb_request_token(request):
     consumer_key = request.REQUEST.get("oauth_consumer_key")
+    logging.debug("consumer key: %s" % consumer_key)
     try:
+	logging.debug("See if we already have a key for: %s" % consumer_key)
         Consumer.objects.get(name=consumer_key, key=consumer_key)
+        logging.debug("We already have the consumer key")
     except ObjectDoesNotExist:
+	logging.debug("We don't create a new one")
         Consumer.objects.create(name=consumer_key, key=consumer_key)
-    return request_token(request)
+        logging.debug("Create a new consumer key")
+    logging.debug("did we get here?")
+    response = request_token(request)
+    logging.debug(response)
+    return response
