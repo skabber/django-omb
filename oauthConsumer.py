@@ -27,13 +27,15 @@ def requestAuthorization(token, url, listener, user):
     profile = user.get_profile()
     url = urlparse.urlparse(url)
     params = {}
-    params.update(dict([part.split('=') for part in url[4].split('&')]))
+    if url[4] != '':
+        # We need to copy over the query string params for sites like laconica
+        params.update(dict([part.split('=') for part in url[4].split('&')]))
     params['omb_version'] = OMB_VERSION_01
     params['omb_listener'] = listener
     params['omb_listenee'] = user_profile_url
     params['omb_listenee_profile'] = user_profile_url
     params['omb_listenee_nickname'] = user.username
-    params['omb_listenee_license'] = '%s/license/' % current_site.domain # TODO link to the real license
+    params['omb_listenee_license'] = 'http://%s/license/' % current_site.domain # TODO link to the real license
     params['omb_listenee_fullname'] = "%s %s" % (user.first_name, user.last_name)
     params['omb_listenee_homepage'] = "" # TOOD Pinax doesn't have this
     params['omb_listenee_bio'] = profile.about
