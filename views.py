@@ -145,3 +145,6 @@ def omb_request_token(request):
     response = request_token(request)
     logging.debug(response)
     return response
+
+def oauth_authorize(request, token, callback, params):
+    return HttpResponse('Simple custom view for %s.' % token.consumer.name)
