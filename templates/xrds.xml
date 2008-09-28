@@ -3,7 +3,7 @@
  <XRD xmlns="xri://$xrd*($v*2.0)" xml:id="oauth" xmlns:simple="http://xrds-simple.net/core/1.0" version="2.0">
   <Type>xri://$xrds*simple</Type>
   <Service>
-   <URI>http://{{ site_domain }}{% url oauth_request_token %}</URI>
+   <URI>http://{{ site_domain }}{% url omb_request_token %}</URI>
    <Type>http://oauth.net/core/1.0/endpoint/request</Type>
    <Type>http://oauth.net/core/1.0/parameters/auth-header</Type>
    <Type>http://oauth.net/core/1.0/parameters/post-body</Type>

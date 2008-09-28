@@ -12,6 +12,8 @@ from omb.models import RemoteProfile
 
 from oauth_provider.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1
 from oauth_provider.stores import DataStore
+from oauth_provider.views import request_token
+from oauth_provider.models import Consumer
 
 def follow(request):
     if request.method == "GET":
@@ -68,7 +70,7 @@ def finish_follow(request):
     return HttpResponseRedirect(user.get_absolute_url())
     
 
-def postnotice(request):
+def post_notice(request):
     current_site = Site.objects.get_current()
     signature_methods = {
         OAuthSignatureMethod_HMAC_SHA1().get_name(): OAuthSignatureMethod_HMAC_SHA1
@@ -124,3 +126,8 @@ def xrds(request, username):
     current_site = Site.objects.get_current()
     user = get_object_or_404(User, username=username)
     return render_to_response("xrds.xml", {"site_domain": current_site.domain}, mimetype="text/xml", context_instance=RequestContext(request))
+
+def omb_request_token(request):
+    consumer_key = request.REQUEST.get("oauth_consumer_key")
+    Consumer.objects.create(name=consumer_key, key=consumer_key)
+    return request_token(request)
