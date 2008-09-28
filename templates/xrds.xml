@@ -11,7 +11,7 @@
    <LocalID>{{ site_domain }}/user/{{ object.id }}</LocalID>
 </Service>
   <Service>
-   <URI>http://{{ site_domain }}{% url oauth_user_authorization %}</URI>
+   <URI>http://{{ site_domain }}{% url omb_user_authorization %}</URI>
    <Type>http://oauth.net/core/1.0/endpoint/authorize</Type>
    <Type>http://oauth.net/core/1.0/parameters/auth-header</Type>
    <Type>http://oauth.net/core/1.0/parameters/post-body</Type>

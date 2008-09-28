@@ -8,4 +8,5 @@ urlpatterns = patterns('',
     url(r'^(?P<username>[\w]+)/xrds/$', 'omb.views.xrds', name="omb_xrds"),
     
     url(r'^request_token/$', 'omb.views.omb_request_token', name="omb_request_token"),
+    url(r'^authorize/$', 'omb.views.authorize', name="omb_user_authorization"),
 )

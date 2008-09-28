@@ -13,9 +13,10 @@ from omb.models import RemoteProfile
 
 from oauth_provider.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1
 from oauth_provider.stores import DataStore
-from oauth_provider.views import request_token
+from oauth_provider.views import request_token, user_authorization
 from oauth_provider.models import Consumer
 
+import urllib
 import logging
 
 def follow(request):
@@ -145,6 +146,21 @@ def omb_request_token(request):
     response = request_token(request)
     logging.debug(response)
     return response
+
+def authorize(request):
+    if request.method == "GET":
+        return user_authorization(request)
+    else:
+        response = user_authorization(request)
+        if type(response) == HttpResponseRedirect:
+            # Add on the necessary omb parameters
+            location = response['Location']
+            params = {}
+            if location.find("?") > -1:
+                location += "&%s" % urllib.urlencode(params)
+            else:
+                location += "?%s" % urllib.urlencode(params)
+        return response
 
 def oauth_authorize(request, token, callback, params):
     if request.method == "GET":
