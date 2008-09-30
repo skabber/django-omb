@@ -27,7 +27,7 @@ def send_notice_to_remote_followers(sender, instance, created, **kwargs):
     for follower in remote_followers:
         remote_profile = follower.follower_content_object
         print "Sending tweet to %s at %s" % (remote_profile.username, remote_profile.url)
-        notice_url = reverse('single', args=[instance.id])
+        notice_url = reverse('single_tweet', args=[instance.id])
         oauthConsumer.postNotice(remote_profile.token, remote_profile.secret, remote_profile.post_notice_url, instance.text, notice_url, user)
 
 post_save.connect(send_notice_to_remote_followers, sender=noticeModel)
