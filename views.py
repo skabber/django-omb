@@ -18,7 +18,6 @@ from oauth_provider.views import request_token, user_authorization
 from oauth_provider.models import Consumer
 
 import urllib
-import logging
 
 def follow(request):
     if request.method == "GET":
@@ -78,25 +77,26 @@ def finish_follow(request):
 def post_notice(request):
     current_site = Site.objects.get_current()
     signature_methods = {
-        OAuthSignatureMethod_HMAC_SHA1().get_name(): OAuthSignatureMethod_HMAC_SHA1
+        OAuthSignatureMethod_HMAC_SHA1().get_name(): OAuthSignatureMethod_HMAC_SHA1()
     }
-    oauth_req = OAuthRequest.from_request(request.method, request.build_absolute_uri(), headers=request.META)
+    oauth_req = OAuthRequest.from_request(request.method, request.build_absolute_uri(), headers=request.META, parameters=request.POST.copy())
     if not oauth_req:
         return HttpResponse("Not a OAuthRequest")
     else:
         oauth_server = OAuthServer(data_store=DataStore(oauth_req), signature_methods=signature_methods)
-        oauth_server.verify_request(oauth_request)
+        oauth_server.verify_request(oauth_req)
         # TOOD Refactor this into something like omb.post_notice
         version = oauth_req.get_parameter('omb_version')
         if version != omb.OMB_VERSION_01:
             return HttpResponse("Unsupported OMB version")
         listenee = oauth_req.get_parameter('omb_listenee')
-        remote_profile = RemoteProfile.objects.get(uri=listenee)
-        if not remote_profile:
+        try:
+            remote_profile = RemoteProfile.objects.get(uri=listenee)
+        except ObjectDoesNotExist:
             return HttpResposne("Profile unknown")
-        subscription = Subscription.objects.get(token=oauth_req.get_parameter('token'))
-        if not subscription:
-            return HttpResponse("No such subscription")
+        #subscription = Subscription.objects.get(token=oauth_req.get_parameter('token'))
+        #if not subscription:
+        #    return HttpResponse("No such subscription")
         content = oauth_req.get_parameter('omb_notice_content')
         if not content or len(content) > 140:
             return HttpResponse("Invalid notice content")
@@ -106,20 +106,16 @@ def post_notice(request):
         notice_url = oauth_uri.get_parameter("omb_notice_url")
         # TODO Validate this url 
             # Invalid notice url
-        try:
-            Notice.objects.get(uri=notice_uri)
-        except: # TODO catch the real exception
-            notice = Notice.objects.create(profile=remote_profile, content=content, )
-            # TODO this is bad, do this better
-            # TODO add the notice.source = "omb"
-            # TODO add notice.is_local=False
-            notice.uri = "%s/notice/%s" % (current_site.domain, notice.id)
-            notice.save()
-            # Broadcast to remote subscribers ===================================
-            subscriptions = Subscription.objects.filter(subscribed=notice.profile)
-            for sub in subcriptions:
-                rp = RemoteProfile.objects.get(id=sub.subscriber.id)
-                omb.post_notice_keys(notice, rp.postnoticeurl, sub.token, sub.secret)
+
+        notice_app_label, notice_model_name = settings.OMB_NOTICE_MODULE.split('.')
+        noticeModel = models.get_model(notice_app_label, notice_model_name)
+        notice = noticeModel.objects.create(sender=remote_profile, text=content)
+        notice.save()
+        # Broadcast to remote subscribers ===================================
+        #subscriptions = Subscription.objects.filter(subscribed=notice.profile)
+        #for sub in subcriptions:
+        #    rp = RemoteProfile.objects.get(id=sub.subscriber.id)
+        #    omb.post_notice_keys(notice, rp.postnoticeurl, sub.token, sub.secret)
                 
             
         return HttpResponse("omb_version=%s" % omb.OMB_VERSION_01)
@@ -134,18 +130,11 @@ def xrds(request, username):
 
 def omb_request_token(request):
     consumer_key = request.REQUEST.get("oauth_consumer_key")
-    logging.debug("consumer key: %s" % consumer_key)
     try:
-	logging.debug("See if we already have a key for: %s" % consumer_key)
         Consumer.objects.get(name=consumer_key, key=consumer_key)
-        logging.debug("We already have the consumer key")
     except ObjectDoesNotExist:
-	logging.debug("We don't create a new one")
         Consumer.objects.create(name=consumer_key, key=consumer_key)
-        logging.debug("Create a new consumer key")
-    logging.debug("did we get here?")
     response = request_token(request)
-    logging.debug(response)
     return response
 
 def authorize(request):
