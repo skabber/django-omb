@@ -7,4 +7,5 @@ This is a re-usable Django application that adds support for the OpenMicroBloggi
 --------------
  Dependencies 
 --------------
-.. _django-oauth: http://github.com/skabber/django-oauth/tree/master
+`django-oauth<http://github.com/skabber/django-oauth/tree/master>`_
+
