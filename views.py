@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 
 from omb.forms import RemoteSubscribeForm, AuthorizeForm
-from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE
+from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE, OMB_VERSION_01
 from omb.models import RemoteProfile
 
 from oauth_provider.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1
@@ -87,7 +87,7 @@ def post_notice(request):
         oauth_server.verify_request(oauth_req)
         # TOOD Refactor this into something like omb.post_notice
         version = oauth_req.get_parameter('omb_version')
-        if version != omb.OMB_VERSION_01:
+        if version != OMB_VERSION_01:
             return HttpResponse("Unsupported OMB version")
         listenee = oauth_req.get_parameter('omb_listenee')
         try:
@@ -103,7 +103,7 @@ def post_notice(request):
         notice_uri = oauth_req.get_parameter('omb_notice')
         # TODO Validate this uri exists
             # Invalid notice uri
-        notice_url = oauth_uri.get_parameter("omb_notice_url")
+        notice_url = oauth_req.get_parameter("omb_notice_url")
         # TODO Validate this url 
             # Invalid notice url
 
@@ -118,7 +118,7 @@ def post_notice(request):
         #    omb.post_notice_keys(notice, rp.postnoticeurl, sub.token, sub.secret)
                 
             
-        return HttpResponse("omb_version=%s" % omb.OMB_VERSION_01)
+        return HttpResponse("omb_version=%s" % OMB_VERSION_01)
 
 def updateprofile(request):
     return HttpResponse("update profile")
