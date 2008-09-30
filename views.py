@@ -137,18 +137,20 @@ def authorize(request):
                 remote_profile = RemoteProfile.objects.get(uri=request.POST.get("omb_listenee"))
             except:
                 remote_profile = RemoteProfile()
-                remote_profile.username = request.POST.get("omb_listenee_nickname")
-                remote_profile.uri = request.POST.get("omb_listenee")
-                remote_profile.url = request.POST.get("omb_listenee_profile")
+                remote_profile.username = request.GET.get("omb_listenee_nickname")
+                remote_profile.uri = request.GET.get("omb_listenee")
+                remote_profile.url = request.GET.get("omb_listenee_profile")
                 # TODO get the post_notice_url and the update_profile_url by getting the XRDS file from the omb_listenee_profile
                 remote_profile.post_notice_url = ""
                 remote_profile.update_profile_url = ""
                 remote_profile.token = ""
                 remote_profile.secret = ""
                 remote_profile.save()
-                
+            # TODO wrap this in a try catch
+            app_label, model_name = settings.OMB_FOLLOWING_MODULE.split('.')
+            following_model = models.get_model(app_label, model_name)
             # create the following between the user and the remote profile
-            following = model()
+            following = following_model()
             following.followed_content_object = request.user
             following.follower_content_object = remote_profile
             following.save()
