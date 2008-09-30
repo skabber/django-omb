@@ -8,7 +8,7 @@
    <Type>http://oauth.net/core/1.0/parameters/auth-header</Type>
    <Type>http://oauth.net/core/1.0/parameters/post-body</Type>
    <Type>http://oauth.net/core/1.0/signature/HMAC-SHA1</Type>
-   <LocalID>{{ site_domain }}/user/{{ object.id }}</LocalID>
+   <LocalID>{{ site_domain }}{% url profile_detail username=other_user.username %}</LocalID>
 </Service>
   <Service>
    <URI>http://{{ site_domain }}{% url omb_user_authorization %}</URI>

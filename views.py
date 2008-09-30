@@ -125,8 +125,8 @@ def updateprofile(request):
 
 def xrds(request, username):
     current_site = Site.objects.get_current()
-    user = get_object_or_404(User, username=username)
-    return render_to_response("xrds.xml", {"site_domain": current_site.domain}, mimetype="text/xml", context_instance=RequestContext(request))
+    other_user = get_object_or_404(User, username=username)
+    return render_to_response("xrds.xml", {"site_domain": current_site.domain, "other_user": other_user}, mimetype="text/xml", context_instance=RequestContext(request))
 
 def omb_request_token(request):
     consumer_key = request.REQUEST.get("oauth_consumer_key")
@@ -144,7 +144,9 @@ def authorize(request):
         current_site = Site.objects.get_current()
         user_profile_url = "http://%s%s" % (current_site.domain, reverse('profile_detail', args=[request.user.username]))
         response = user_authorization(request)
-        if type(response) == HttpResponseRedirect:
+        if type(response) == HttpResponseRedirect: # TODO Check that it was 200 a success etc.
+            # create the following between the user and the remote profile
+            
             # Add on the necessary omb parameters
             location = response['Location']
             params = {
