@@ -94,29 +94,16 @@ def post_notice(request):
             remote_profile = RemoteProfile.objects.get(uri=listenee)
         except ObjectDoesNotExist:
             return HttpResposne("Profile unknown")
-        #subscription = Subscription.objects.get(token=oauth_req.get_parameter('token'))
-        #if not subscription:
-        #    return HttpResponse("No such subscription")
         content = oauth_req.get_parameter('omb_notice_content')
         if not content or len(content) > 140:
             return HttpResponse("Invalid notice content")
         notice_uri = oauth_req.get_parameter('omb_notice')
-        # TODO Validate this uri exists
-            # Invalid notice uri
         notice_url = oauth_req.get_parameter("omb_notice_url")
-        # TODO Validate this url 
-            # Invalid notice url
 
         notice_app_label, notice_model_name = settings.OMB_NOTICE_MODULE.split('.')
         noticeModel = models.get_model(notice_app_label, notice_model_name)
         notice = noticeModel.objects.create(sender=remote_profile, text=content)
         notice.save()
-        # Broadcast to remote subscribers ===================================
-        #subscriptions = Subscription.objects.filter(subscribed=notice.profile)
-        #for sub in subcriptions:
-        #    rp = RemoteProfile.objects.get(id=sub.subscriber.id)
-        #    omb.post_notice_keys(notice, rp.postnoticeurl, sub.token, sub.secret)
-                
             
         return HttpResponse("omb_version=%s" % OMB_VERSION_01)
 
@@ -145,7 +132,26 @@ def authorize(request):
         user_profile_url = "http://%s%s" % (current_site.domain, reverse('profile_detail', args=[request.user.username]))
         response = user_authorization(request)
         if type(response) == HttpResponseRedirect: # TODO Check that it was 200 a success etc.
+            # get the RemoteProfile for the user we are going to follow
+            try:
+                remote_profile = RemoteProfile.objects.get(uri=request.POST.get("omb_listenee"))
+            except:
+                remote_profile = RemoteProfile()
+                remote_profile.username = request.POST.get("omb_listenee_nickname")
+                remote_profile.uri = request.POST.get("omb_listenee")
+                remote_profile.url = request.POST.get("omb_listenee_profile")
+                # TODO get the post_notice_url and the update_profile_url by getting the XRDS file from the omb_listenee_profile
+                remote_profile.post_notice_url = ""
+                remote_profile.update_profile_url = ""
+                remote_profile.token = ""
+                remote_profile.secret = ""
+                remote_profile.save()
+                
             # create the following between the user and the remote profile
+            following = model()
+            following.followed_content_object = request.user
+            following.follower_content_object = remote_profile
+            following.save()
             
             # Add on the necessary omb parameters
             location = response['Location']

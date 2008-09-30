@@ -15,11 +15,11 @@ class RemoteProfile(models.Model):
     username = models.CharField(max_length=30)
     uri = models.CharField(unique=True, max_length=600)
     url = models.URLField(verify_exists=False)
-    post_notice_url = models.CharField(max_length=600)
-    update_profile_url = models.CharField(max_length=600)
+    post_notice_url = models.CharField(max_length=600, blank=True)
+    update_profile_url = models.CharField(max_length=600, blank=True)
     created = models.DateTimeField(auto_now_add=True)
-    token = models.CharField(max_length=300)
-    secret = models.CharField(max_length=300)
+    token = models.CharField(max_length=300, blank=True)
+    secret = models.CharField(max_length=300, blank=True)
 
 def send_notice_to_remote_followers(sender, instance, created, **kwargs):
     user = instance.sender
