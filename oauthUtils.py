@@ -10,6 +10,9 @@ def xrdsContainsServices(xrds, service_names):
     return True
 
 def getServices(profile_url):
+    """
+    Returns a dictionary of services provided by the XRDS file that is discovered at the URL that was passed in.
+    """
     dis = discover.discover(profile_url)
     # identi.ca doesn't implement XRDS correctly http://xrds-simple.net/core/1.0/
     # This is a hack until laconi.ca fixes http://laconi.ca/trac/ticket/696
