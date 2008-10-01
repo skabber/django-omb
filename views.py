@@ -135,7 +135,7 @@ def authorize(request):
         if type(response) == HttpResponseRedirect: # TODO Check that it was 200 a success etc.
             # get the RemoteProfile for the user we are going to follow
             try:
-                remote_profile = RemoteProfile.objects.get(uri=request.POST.get("omb_listenee"))
+                remote_profile = RemoteProfile.objects.get(uri=request.GET.get("omb_listenee"))
             except:
                 remote_profile = RemoteProfile()
                 remote_profile.username = request.GET.get("omb_listenee_nickname")
