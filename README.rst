@@ -20,3 +20,10 @@ OMB requires a couple new settings to be defined in your settings.py file.  The 
  * OMB_FOLLOWING_MODULE = 'zwitschern.Following'
  * OMB_NOTICE_MODULE = 'zwitschern.Tweet'
 
+-------
+ Pinax
+-------
+I have modified the zwitschern app from Pinax to be compatible with omb.  You can find my changes in the 2 diff's below.
+http://dpaste.com/hold/81686/
+http://dpaste.com/hold/81687/
+
