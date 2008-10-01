@@ -19,5 +19,4 @@ OMB requires a couple new settings to be defined in your settings.py file.  The 
  * OAUTH_AUTHORIZE_VIEW = 'omb.views.oauth_authorize'
  * OMB_FOLLOWING_MODULE = 'zwitschern.Following'
  * OMB_NOTICE_MODULE = 'zwitschern.Tweet'
- * OMB_NOTICE_INSTANCE_MODULE = 'zwitschern.TweetInstance'
 
