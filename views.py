@@ -55,6 +55,7 @@ def finish_follow(request):
         remote_profile.username = oauth_request.get_parameter("omb_listener_nickname")
         remote_profile.uri = omb_session["listener"]
         remote_profile.url = oauth_request.get_parameter('omb_listener_profile')
+        remote_profile.avatar = oauth_request.get_parameter('omb_listener_avatar')
         remote_profile.post_notice_url = omb_session["post_notice_url"]
         remote_profile.update_profile_url = omb_session["update_profile_url"]
         remote_profile.token = accessToken.key
