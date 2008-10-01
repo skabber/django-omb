@@ -15,6 +15,8 @@ class RemoteProfile(models.Model):
     username = models.CharField(max_length=30)
     uri = models.CharField(unique=True, max_length=600)
     url = models.URLField(verify_exists=False)
+    avatar = models.CharField(max_length=300, blank=True)
+    
     post_notice_url = models.CharField(max_length=600, blank=True)
     update_profile_url = models.CharField(max_length=600, blank=True)
     created = models.DateTimeField(auto_now_add=True)
