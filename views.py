@@ -42,7 +42,7 @@ def follow(request):
             }
             request.session['oauth_authorization_request'] = omb_session
             return HttpResponseRedirect(oauthRequest.to_url())            
-    return render_to_response('omb/remote_subscribe.html', {'form': form})
+    return render_to_response('remote_subscribe.html', {'form': form})
 
 def finish_follow(request):
     omb_session = request.session['oauth_authorization_request']
@@ -187,4 +187,4 @@ def oauth_authorize(request, token, callback, params):
     else:
         form = AuthorizeForm(request.POST)
         print request.POST
-    return render_to_response("omb/authorize.html", context_vars, context_instance=RequestContext(request))
+    return render_to_response("authorize.html", context_vars, context_instance=RequestContext(request))
