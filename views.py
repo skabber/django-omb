@@ -155,8 +155,8 @@ def authorize(request):
             following_model = models.get_model(app_label, model_name)
             # create the following between the user and the remote profile
             following = following_model()
-            following.followed_content_object = request.user
-            following.follower_content_object = remote_profile
+            following.followed_content_object = remote_profile
+            following.follower_content_object = request.user
             following.save()
             
             # Add on the necessary omb parameters
