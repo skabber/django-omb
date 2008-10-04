@@ -144,6 +144,7 @@ def authorize(request):
                 remote_profile.username = request.GET.get("omb_listenee_nickname")
                 remote_profile.uri = request.GET.get("omb_listenee")
                 remote_profile.url = request.GET.get("omb_listenee_profile")
+                remote_profile.avatar = request.GET.get("omb_listenee_avatar")
                 # TODO get the post_notice_url and the update_profile_url by getting the XRDS file from the omb_listenee_profile
                 remote_profile.post_notice_url = ""
                 remote_profile.update_profile_url = ""
