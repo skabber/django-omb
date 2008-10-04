@@ -76,7 +76,7 @@ def finish_follow(request):
     following.save()
     return HttpResponseRedirect(user.get_absolute_url())
     
-
+@supress_logging_output
 def post_notice(request):
     current_site = Site.objects.get_current()
     signature_methods = {
@@ -110,9 +110,11 @@ def post_notice(request):
             
         return HttpResponse("omb_version=%s" % OMB_VERSION_01)
 
+@supress_logging_output
 def updateprofile(request):
     return HttpResponse("update profile")
 
+@supress_logging_output
 def xrds(request, username):
     current_site = Site.objects.get_current()
     other_user = get_object_or_404(User, username=username)
@@ -128,6 +130,7 @@ def omb_request_token(request):
     response = request_token(request)
     return response
 
+@supress_logging_output
 def authorize(request):
     if request.method == "GET":
         return user_authorization(request)
