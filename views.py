@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 
+from djangologging.decorators import supress_logging_output
+
 from omb.forms import RemoteSubscribeForm, AuthorizeForm
 from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE, OMB_VERSION_01
 from omb.models import RemoteProfile
@@ -116,6 +118,7 @@ def xrds(request, username):
     other_user = get_object_or_404(User, username=username)
     return render_to_response("xrds.xml", {"site_domain": current_site.domain, "other_user": other_user}, mimetype="text/xml", context_instance=RequestContext(request))
 
+@supress_logging_output
 def omb_request_token(request):
     consumer_key = request.REQUEST.get("oauth_consumer_key")
     try:
