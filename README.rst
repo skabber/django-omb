@@ -20,10 +20,6 @@ OMB requires a couple new settings to be defined in your settings.py file.  The 
  * OMB_FOLLOWING_MODULE = 'zwitschern.Following'
  * OMB_NOTICE_MODULE = 'zwitschern.Tweet'
 
-Note that djangologging can interfere with the oauth and omb apps, so I also set 
-
- * LOGGING_OUTPUT_ENABLED = False
-
 -------
  Pinax
 -------
