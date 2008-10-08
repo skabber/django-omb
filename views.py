@@ -93,7 +93,7 @@ def post_notice(request):
         try:
             remote_profile = RemoteProfile.objects.get(uri=listenee)
         except ObjectDoesNotExist:
-            return HttpResposne("Profile unknown")
+            return HttpResponse("Profile unknown", mimetype="text/plain")
         content = oauth_req.get_parameter('omb_notice_content')
         if not content or len(content) > 140:
             return HttpResponse("Invalid notice content", mimetype="text/plain")
