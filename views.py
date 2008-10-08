@@ -8,8 +8,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 
-from djangologging.decorators import supress_logging_output
-
 from omb.forms import RemoteSubscribeForm, AuthorizeForm
 from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE, OMB_VERSION_01
 from omb.models import RemoteProfile
@@ -76,7 +74,6 @@ def finish_follow(request):
     following.save()
     return HttpResponseRedirect(user.get_absolute_url())
     
-@supress_logging_output
 def post_notice(request):
     current_site = Site.objects.get_current()
     signature_methods = {
@@ -84,14 +81,14 @@ def post_notice(request):
     }
     oauth_req = OAuthRequest.from_request(request.method, request.build_absolute_uri(), headers=request.META, parameters=request.POST.copy())
     if not oauth_req:
-        return HttpResponse("Not a OAuthRequest")
+        return HttpResponse("Not a OAuthRequest", mimetype="text/plain")
     else:
         oauth_server = OAuthServer(data_store=DataStore(oauth_req), signature_methods=signature_methods)
         oauth_server.verify_request(oauth_req)
         # TOOD Refactor this into something like omb.post_notice
         version = oauth_req.get_parameter('omb_version')
         if version != OMB_VERSION_01:
-            return HttpResponse("Unsupported OMB version")
+            return HttpResponse("Unsupported OMB version", mimetype="text/plain")
         listenee = oauth_req.get_parameter('omb_listenee')
         try:
             remote_profile = RemoteProfile.objects.get(uri=listenee)
@@ -99,7 +96,7 @@ def post_notice(request):
             return HttpResposne("Profile unknown")
         content = oauth_req.get_parameter('omb_notice_content')
         if not content or len(content) > 140:
-            return HttpResponse("Invalid notice content")
+            return HttpResponse("Invalid notice content", mimetype="text/plain")
         notice_uri = oauth_req.get_parameter('omb_notice')
         notice_url = oauth_req.get_parameter("omb_notice_url")
 
@@ -108,19 +105,17 @@ def post_notice(request):
         notice = noticeModel.objects.create(sender=remote_profile, text=content)
         notice.save()
             
-        return HttpResponse("omb_version=%s" % OMB_VERSION_01)
+        return HttpResponse("omb_version=%s" % OMB_VERSION_01, mimetype="text/plain")
 
-@supress_logging_output
 def updateprofile(request):
-    return HttpResponse("update profile")
+    # TODO Complete the update profile view
+    return HttpResponse("update profile", mimetype="text/plain")
 
-@supress_logging_output
 def xrds(request, username):
     current_site = Site.objects.get_current()
     other_user = get_object_or_404(User, username=username)
     return render_to_response("xrds.xml", {"site_domain": current_site.domain, "other_user": other_user}, mimetype="text/xml", context_instance=RequestContext(request))
 
-@supress_logging_output
 def omb_request_token(request):
     consumer_key = request.REQUEST.get("oauth_consumer_key")
     try:
@@ -130,7 +125,6 @@ def omb_request_token(request):
     response = request_token(request)
     return response
 
-@supress_logging_output
 def authorize(request):
     if request.method == "GET":
         return user_authorization(request)
