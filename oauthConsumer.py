@@ -69,7 +69,6 @@ def postNotice(token, secret, post_notice_url, notice_content, notice_url, user)
     user_profile_url = "%s%s" % (current_site.domain, reverse('profile_detail', args=[user.username]))
     oauthToken = OAuthToken(token, secret)
     url = urlparse.urlparse(post_notice_url)
-    #import pdb;pdb.set_trace()
     params = {}
     if url[4] != '':
         # We need to copy over the query string params for sites like laconica
@@ -84,7 +83,33 @@ def postNotice(token, secret, post_notice_url, notice_content, notice_url, user)
     consumer = OAuthConsumer(current_site.domain, "")
     req = OAuthRequest().from_consumer_and_token(consumer, token=oauthToken, http_url=url.geturl(), parameters=params, http_method="POST")
     req.sign_request(OAuthSignatureMethod_HMAC_SHA1(), consumer, oauthToken)
-    print url.geturl()
     f = urllib.urlopen(url.geturl(), req.to_postdata())
     data = f.read()
-    print data
+    # TODO log failures
+
+def updateProfile(token, secret, update_profile_url, profile):
+    current_site = Site.objects.get_current()
+    user_profile_url = "%s%s" % (current_site.domain, reverse('profile_detail', args=[profile.user.username]))
+    oauthToken = OAuthToken(token, secret)
+    url = urlparse.urlparse(update_profile_url)
+    params = {}
+    if url[4] != '':
+        # We need to copy over the query string params for sites like laconica
+        params.update(dict([part.split('=') for part in url[4].split('&')]))
+    params['omb_version'] = OMB_VERSION_01
+    params['omb_listenee'] = user_profile_url
+    params['omb_listenee_profile'] = user_profile_url
+    params['omb_listenee_nickname'] = profile.username
+    params['omb_listenee_license'] = '%s/license/' % current_site.domain # TODO link to the real license
+    params['omb_listenee_fullname'] = profile.name
+    params['omb_listenee_homepage'] = profile.website
+    params['omb_listenee_bio'] = profile.about
+    params['omb_listenee_location'] = profile.location
+    #params['omb_listenee_avatar'] = TODO get the gravatar of the user
+    
+    consumer = OAuthConsumer(current_site.domain, "")
+    req = OAuthRequest().from_consumer_and_token(consumer, token=oauthToken, http_url=url.geturl(), parameters=params, http_method="POST")
+    req.sign_request(OAuthSignatureMethod_HMAC_SHA1(), consumer, oauthToken)
+    f = urllib.urlopen(url.geturl(), req.to_postdata())
+    data = f.read()
+    # TODO log failures

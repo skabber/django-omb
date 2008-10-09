@@ -12,12 +12,17 @@ from omb.forms import RemoteSubscribeForm, AuthorizeForm
 from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE, OMB_VERSION_01
 from omb.models import RemoteProfile
 
-from oauth_provider.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1
+from oauth_provider.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1, OAuthSignatureMethod_PLAINTEXT, OAuthError
 from oauth_provider.stores import DataStore
 from oauth_provider.views import request_token, user_authorization
 from oauth_provider.models import Consumer
 
 import urllib
+
+signature_methods = {
+    OAuthSignatureMethod_HMAC_SHA1().get_name(): OAuthSignatureMethod_HMAC_SHA1(),
+    OAuthSignatureMethod_PLAINTEXT().get_name(): OAuthSignatureMethod_PLAINTEXT()
+}
 
 def follow(request):
     if request.method == "GET":
@@ -76,9 +81,6 @@ def finish_follow(request):
     
 def post_notice(request):
     current_site = Site.objects.get_current()
-    signature_methods = {
-        OAuthSignatureMethod_HMAC_SHA1().get_name(): OAuthSignatureMethod_HMAC_SHA1()
-    }
     oauth_req = OAuthRequest.from_request(request.method, request.build_absolute_uri(), headers=request.META, parameters=request.POST.copy())
     if not oauth_req:
         return HttpResponse("Not a OAuthRequest", mimetype="text/plain")
@@ -102,15 +104,64 @@ def post_notice(request):
 
         notice_app_label, notice_model_name = settings.OMB_NOTICE_MODULE.split('.')
         noticeModel = models.get_model(notice_app_label, notice_model_name)
-        notice = noticeModel.objects.create(sender=remote_profile, text=content)
+        notice = noticeModel()
+        notice.sender = remote_profile
+        notice.text = content
         notice.save()
             
         return HttpResponse("omb_version=%s" % OMB_VERSION_01, mimetype="text/plain")
 
 def updateprofile(request):
-    # TODO Complete the update profile view
+    oauth_req = OAuthRequest.from_request(request.method, request.build_absolute_uri(), headers=request.META, parameters=request.POST.copy())
     return HttpResponse("update profile", mimetype="text/plain")
+    if not oauth_req:
+        return HttpResponse("Not a OAuthRequest", mimetype="text/plain")
+    else:
+        oauth_server = OAuthServer(data_store=DataStore(oauth_req), signature_methods=signature_methods)
+        oauth_server.verify_request(oauth_req)
+        # TOOD Refactor this into something like omb.update_profile
+        omb_version = oauth_req.get_parameter('omb_version')
+        if omb_version != OMB_VERSION_01:
+            return HttpResponse("Unsupported OMB version", mimetype="text/plain")
+        omb_listenee = oauth_req.get_parameter('omb_listenee')
+        try:
+            remote_profile = RemoteProfile.objects.get(uri=omb_listenee)
+            omb_listenee_profile = _get_oauth_param(oauth_req, 'omb_listenee_profile')
+            if omb_listenee_profile != None:
+                remote_profile.url = omb_listenee_profile
+            omb_listenee_nickname = _get_oauth_param(oauth_req, 'omb_listenee_nickname')
+            if omb_listenee_nickname != None:
+                remote_profile.username = omb_listenee_nickname
+            omb_listenee_license = _get_oauth_param(oauth_req, 'omb_listenee_license')
+            if omb_listenee_license != None:
+                remote_profile.license = omb_listenee_license
+            omb_listenee_fullname = _get_oauth_param(oauth_req, 'omb_listenee_fullname')
+            if omb_listenee_fullname != None:
+                remote_profile.fullname = omb_listenee_fullname
+            omb_listenee_homepage = _get_oauth_param(oauth_req, 'omb_listenee_homepage')
+            if omb_listenee_homepage != None:
+                remote_profile.homepage = omb_listenee_homepage
+            omb_listenee_bio = _get_oauth_param(oauth_req, 'omb_listenee_bio')
+            if omb_listenee_bio != None:
+                remote_profile.bio = omb_listenee_bio
+            omb_listenee_location = _get_oauth_param(oauth_req, 'omb_listenee_location')
+            if omb_listenee_location != None:
+                remote_profile.location = omb_listenee_location
+            omb_listenee_avatar = _get_oauth_param(oauth_req, 'omb_listenee_avatar')
+            if omb_listenee_avatar != None:
+                remote_profile.avatar = omb_listenee_avatar
+            
+            remote_profile.save()
+            return HttpResponse("omb_version=%s" % OMB_VERSION_01, mimetype="text/plain")
+        except ObjectDoesNotExist:
+            return HttpResponse("Profile unknown", mimetype="text/plain")
 
+def _get_oauth_param(oauth_req, field_name):
+    try:
+        return oauth_req.get_parameter(field_name)
+    except OAuthError:
+        return None
+    
 def xrds(request, username):
     current_site = Site.objects.get_current()
     other_user = get_object_or_404(User, username=username)
@@ -141,12 +192,15 @@ def authorize(request):
                 remote_profile.username = request.GET.get("omb_listenee_nickname")
                 remote_profile.uri = request.GET.get("omb_listenee")
                 remote_profile.url = request.GET.get("omb_listenee_profile")
+                remote_profile.license = request.GET.get("omb_listenee_license")
+                remote_profile.fullname = request.GET.get("omb_listenee_fullname")
+                remote_profile.homepage = request.GET.get("omb_listenee_homepage")
+                remote_profile.bio = request.GET.get("omb_listenee_bio")
+                remote_profile.location = request.GET.get("omb_listenee_location")
                 remote_profile.avatar = request.GET.get("omb_listenee_avatar")
                 # TODO get the post_notice_url and the update_profile_url by getting the XRDS file from the omb_listenee_profile
-                remote_profile.post_notice_url = ""
-                remote_profile.update_profile_url = ""
-                remote_profile.token = ""
-                remote_profile.secret = ""
+                #remote_profile.post_notice_url = ""
+                #remote_profile.update_profile_url = ""
                 remote_profile.save()
             # TODO wrap this in a try catch
             app_label, model_name = settings.OMB_FOLLOWING_MODULE.split('.')
