@@ -12,7 +12,7 @@ from omb.forms import RemoteSubscribeForm, AuthorizeForm
 from omb import oauthUtils, oauthConsumer, OAUTH_REQUEST, OAUTH_ACCESS, OMB_POST_NOTICE, OMB_UPDATE_PROFILE, OAUTH_AUTHORIZE, OMB_VERSION_01
 from omb.models import RemoteProfile
 
-from oauth_provider.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1, OAuthSignatureMethod_PLAINTEXT, OAuthError
+from oauth.oauth import OAuthRequest, OAuthServer, OAuthSignatureMethod_HMAC_SHA1, OAuthSignatureMethod_PLAINTEXT, OAuthError
 from oauth_provider.stores import DataStore
 from oauth_provider.views import request_token, user_authorization
 from oauth_provider.models import Consumer
