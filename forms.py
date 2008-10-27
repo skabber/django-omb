@@ -5,8 +5,8 @@ class RemoteSubscribeForm(forms.Form):
     profile_url = forms.URLField(label="OMB Compatable Profile URL")
 
 AUTHORIZE_CHOICES = (
-    ('on', 'Accept'),
-    ('off', 'Reject')
+    (1, 'Accept'),
+    (0, 'Reject')
 )
 
 class AuthorizeForm(forms.Form):
