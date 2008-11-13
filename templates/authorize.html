@@ -5,7 +5,7 @@
 {% block rtab_id %}id="profile_tab"{% endblock %}
 
 {% block body %}
-	<p>Are you sure that you want to subscribe to this users tweets?</p>
+	<p>{% trans "Are you sure that you want to subscribe to this users tweets?" %}</p>
 	{% if avatar %}<img src="{{ avatar }}"/>{% endif %}
 	<h2>{{ username }}</h2>
 	<p>{% if full_name %}{{ full_name }}{% endif %}</p>

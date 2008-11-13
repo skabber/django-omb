@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
 from omb import oauthConsumer
 
 notice_app_label, notice_model_name = settings.OMB_NOTICE_MODULE.split('.')
@@ -15,21 +16,25 @@ profile_app_label, profile_model_name = settings.AUTH_PROFILE_MODULE.split('.')
 profileModel = models.get_model(profile_app_label, profile_model_name)
 
 class RemoteProfile(models.Model):
-    username = models.CharField(max_length=30)
-    uri = models.CharField(unique=True, max_length=600)
-    url = models.URLField(verify_exists=False)
-    license = models.URLField(verify_exists=False, blank=True)
-    fullname = models.CharField(max_length=100, blank=True)
-    homepage = models.URLField(verify_exists=False, blank=True)
-    bio = models.TextField(blank=True)
-    location = models.CharField(max_length=100, blank=True)
-    avatar = models.CharField(max_length=300, blank=True)
-    
-    post_notice_url = models.CharField(max_length=600, blank=True)
-    update_profile_url = models.CharField(max_length=600, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    token = models.CharField(max_length=300, blank=True)
-    secret = models.CharField(max_length=300, blank=True)
+    username = models.CharField(_('username'), max_length=30)
+    uri = models.CharField(_('uri'), unique=True, max_length=600)
+    url = models.URLField(_('URL'), verify_exists=False)
+    license = models.URLField(_('license'), verify_exists=False, blank=True)
+    fullname = models.CharField(_('full name'), max_length=100, blank=True)
+    homepage = models.URLField(_('homepage'), verify_exists=False, blank=True)
+    bio = models.TextField(_('bio'), blank=True)
+    location = models.CharField(_('location'), max_length=100, blank=True)
+    avatar = models.CharField(_('avatar'), max_length=300, blank=True)
+
+    post_notice_url = models.CharField(_('post notice URL'), max_length=600, blank=True)
+    update_profile_url = models.CharField(_('update profile URL'), max_length=600, blank=True)
+    created = models.DateTimeField(_('created'), auto_now_add=True)
+    token = models.CharField(_('token'), max_length=300, blank=True)
+    secret = models.CharField(_('secret'), max_length=300, blank=True)
+
+    class Meta:
+        verbose_name = _('remote profile')
+        verbose_name_plural = _('remote profiles')
 
 def send_notice_to_remote_followers(sender, instance, created, **kwargs):
     user = instance.sender

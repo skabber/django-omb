@@ -1,12 +1,13 @@
 from django import forms
+from django.utils.translation import ugettext_lazy as _
 
 class RemoteSubscribeForm(forms.Form):
-    username = forms.CharField(max_length=64, label="Username")
-    profile_url = forms.URLField(label="OMB Compatable Profile URL")
+    username = forms.CharField(max_length=64, label=_("username"))
+    profile_url = forms.URLField(label=_("OMB compatible profile URL"))
 
 AUTHORIZE_CHOICES = (
-    (1, 'Accept'),
-    (0, 'Reject')
+    (1, _('Accept')),
+    (0, _('Reject'))
 )
 
 class AuthorizeForm(forms.Form):
