@@ -28,3 +28,4 @@ OMB requires a couple new settings to be defined in your settings.py file.  The 
 -------
 I have modified the zwitschern app from Pinax to be compatible with omb.  You can find all my changes to Pinax in this patch http://dpaste.com/hold/82366/
 
+test edit
