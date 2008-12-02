@@ -1,0 +1,18 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+
+{% block rtab_id %}id="profile_tab"{% endblock %}
+
+{% block body %}
+	<p>{% trans "Are you sure that you want to subscribe to this users tweets?" %}</p>
+	{% if avatar %}<img src="{{ avatar }}"/>{% endif %}
+	<h2>{{ username }}</h2>
+	<p>{% if full_name %}{{ full_name }}{% endif %}</p>
+	<p>{% if bio %}{{ bio }}{% endif %}</p>
+	<p>{% if location %}{{ location }}{% endif %}</p>
+	<form method="POST" action=".?{{ query_string }}">
+    {{ form.as_p }}
+	<input type="submit" />
+	</form>
+{% endblock %}

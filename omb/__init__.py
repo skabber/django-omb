@@ -1,0 +1,7 @@
+OMB_VERSION_01 = "http://openmicroblogging.org/protocol/0.1"
+OMB_UPDATE_PROFILE = "http://openmicroblogging.org/protocol/0.1/updateProfile"
+OMB_POST_NOTICE = "http://openmicroblogging.org/protocol/0.1/postNotice"
+OAUTH_REQUEST = "http://oauth.net/core/1.0/endpoint/request"
+OAUTH_ACCESS = "http://oauth.net/core/1.0/endpoint/access"
+OAUTH_AUTHORIZE = "http://oauth.net/core/1.0/endpoint/authorize"
+OAUTH_DISCOVERY = "http://oauth.net/discovery/1.0"
