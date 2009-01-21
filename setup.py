@@ -8,6 +8,6 @@ setup(name='omb',
       author='Jay Graves',
       author_email='jay@skabber.com',
       url='http://github.com/skabber/django-omb/tree/master',
-#      packages=['openid', 'pydataportability.xrds'],
+      packages=[],
      )
 
